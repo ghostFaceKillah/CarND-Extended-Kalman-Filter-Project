@@ -56,7 +56,7 @@ public:
    * Updates the state by using standard Kalman Filter equations
    * @param z The measurement at k+1
    */
-  void Update(const Eigen::VectorXd &z);
+  void UpdateLinear(const Eigen::VectorXd &z);
 
   /**
    * Updates the state by using Extended Kalman Filter equations
@@ -64,6 +64,14 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+private:
+  /**
+   * A general update function that does the heavy lifting
+   * for the specialized measurement-instrument-specific functions above
+   * @param z - the actual observation (measurement)
+   * @param z_pred - predicted measurement based on knowledge until k
+   */
+  void Update(const Eigen::VectorXd &z, const Eigen::VectorXd &z_pred);
 };
 
 #endif /* KALMAN_FILTER_H_ */
