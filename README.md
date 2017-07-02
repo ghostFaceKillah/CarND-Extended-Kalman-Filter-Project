@@ -2,9 +2,10 @@
 
 
 Implementation of a very simple Extended Kalman Filter.
-Based on [starter code from Udacity course](https://github.com/udacity/CarND-Extended-Kalman-Filter-Project)
+Based on [starter code from Udacity course](https://github.com/udacity/CarND-Extended-Kalman-Filter-Project).
 
-![](img/work.png)
+
+<img src="img/work.png" alt="Illustaration of Kalman 2d algo." width="60%" align="center"/>
 
 
 
