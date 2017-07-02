@@ -42,7 +42,7 @@ private:
   Eigen::MatrixXd R_laser_;
   // measurement covariance matrix - radar
   Eigen::MatrixXd R_radar_;
-  //
+  // linear observation function matrix
   Eigen::MatrixXd H_laser_;
 };
 

@@ -126,6 +126,4 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.R_ = R_laser_;  // observation covariance
     ekf_.UpdateLinear(measurement_pack.raw_measurements_);
   }
-
 }
-

@@ -17,6 +17,12 @@ VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorX
 */
 MatrixXd CalculateRadarJacobian(const VectorXd& x_state);
 
+/**
+ * A pair of methods for converting between polar (radar)
+ * and carthesian coordinates.
+ * @param observation_vector
+ * @return
+ */
 VectorXd PolarToCartesian(const VectorXd& observation_vector);
 VectorXd CartesianToPolar(const VectorXd& state_vector);
 

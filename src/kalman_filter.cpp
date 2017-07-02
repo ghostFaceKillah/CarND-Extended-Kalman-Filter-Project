@@ -34,10 +34,10 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   VectorXd innovation = z - z_pred;
 
   // bring the yaw innovation back into reasonable range
-  while (innovation(1) >= M_PI) {
+  while (innovation(1) >= M_PI_2) {
     innovation(1) -= M_PI;
   }
-  while (innovation(1) <= -M_PI / 2) {
+  while (innovation(1) <= -M_PI_2) {
     innovation(1) += M_PI;
   }
 
