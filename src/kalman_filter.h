@@ -68,10 +68,10 @@ private:
   /**
    * A general update function that does the heavy lifting
    * for the specialized measurement-instrument-specific functions above
-   * @param z - the actual observation (measurement)
-   * @param z_pred - predicted measurement based on knowledge until k
+   * @param innovation - equal to (z - z_pred). Diff between actual measurement
+   *                     and measurement based on information up to moment k
    */
-  void Update(const Eigen::VectorXd &z, const Eigen::VectorXd &z_pred);
+  void Update(const Eigen::VectorXd &innovation);
 };
 
 #endif /* KALMAN_FILTER_H_ */

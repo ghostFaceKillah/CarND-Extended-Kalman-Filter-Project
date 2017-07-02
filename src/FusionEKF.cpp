@@ -1,40 +1,10 @@
 #include "FusionEKF.h"
+
+#include <iostream>
 #include <math.h>
+
 #include "tools.h"
 #include "Eigen/Dense"
-#include <iostream>
-
-
-/**
- * Data structure note copied from the course website
-   For a row containing radar data, the columns are:
-    * sensor_type,
-    * rho_measured,
-    * phi_measured,
-    * rhodot_measured,
-    * timestamp,
-    * x_groundtruth,
-    * y_groundtruth,
-    * vx_groundtruth,
-    * vy_groundtruth,
-    * yaw_groundtruth,
-    * yawrate_groundtruth.
-
-    For a row containing lidar data, the columns are:
-    *  sensor_type,
-    *  x_measured,
-    *  y_measured,
-    *  timestamp,
-    *  x_groundtruth,
-    *  y_groundtruth,
-    *  vx_groundtruth,
-    *  vy_groundtruth,
-    *  yaw_groundtruth,
-    *  yawrate_groundtruth.
-
-  Whereas radar has three measurements (rho, phi, rhodot),
-  lidar has two measurements (x, y).
- */
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -73,18 +43,17 @@ FusionEKF::FusionEKF() {
 
   // estimated state covariance
   ekf_.P_ = MatrixXd(4, 4);
-  ekf_.P_ << 1, 0, 0,   0,
-             0, 1, 0,   0,
-             0, 0, 1e3, 0,
-             0, 0, 0,   1e3;
+  ekf_.P_ << 1,   0,   0,   0,
+             0,   1,   0,   0,
+             0,   0,   1e3, 0,
+             0,   0,   0,   1e3;
 
   // state transition model - parts will be modified based on time elapsed
   ekf_.F_ = MatrixXd(4, 4);
-  ekf_.F_ << 1, 0, 0, 0,
-             0, 1, 0, 0,
+  ekf_.F_ << 1, 0, 1, 0,
+             0, 1, 0, 1,
              0, 0, 1, 0,
              0, 0, 0, 1;
-
 }
 
 /**
@@ -101,11 +70,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // Initialize the state ekf_.x_ with the first measurement.
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      ekf_.x_ = PolarToCartesian(measurement_pack.raw_measurements_)
+      ekf_.x_ = PolarToCartesian(measurement_pack.raw_measurements_);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      double x = measurement_pack.raw_measurements_[0];
-      double y = measurement_pack.raw_measurements_[1];
+      double x = measurement_pack.raw_measurements_(0);
+      double y = measurement_pack.raw_measurements_(1);
       ekf_.x_ << x, y, 0, 0;
     }
 
@@ -148,7 +117,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    ****************************************************************************/
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-    ekf_.H_ = CalculateRadarJacobian(ekf_.x_);    // observation matrix
+    ekf_.H_ = CalculateRadarJacobian(ekf_.x_);    // approx observation matrix
     ekf_.R_ = R_radar_;                           // observation covariance
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
@@ -157,5 +126,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.R_ = R_laser_;  // observation covariance
     ekf_.UpdateLinear(measurement_pack.raw_measurements_);
   }
+
 }
 

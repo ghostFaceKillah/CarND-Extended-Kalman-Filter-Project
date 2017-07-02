@@ -1,5 +1,6 @@
 #include "kalman_filter.h"
 #include "tools.h"
+#include <iostream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -19,30 +20,35 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 }
 
 void KalmanFilter::Predict() {
-  // predict the state
-
   x_ = F_ * x_;
-  MatrixXd Ft = F_.transpose();
-  P_ = F_ * P_ * Ft + Q_;
+  P_ = F_ * P_ * F_.transpose() + Q_;
 }
 
 void KalmanFilter::UpdateLinear(const Eigen::VectorXd &z) {
   VectorXd z_pred = H_ * x_;
-  Update(z, z_pred);
+  Update(z - z_pred);
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   VectorXd z_pred = CartesianToPolar(x_);
-  Update(z, z_pred);
+  VectorXd innovation = z - z_pred;
+
+  // bring the yaw innovation back into reasonable range
+  while (innovation(1) >= M_PI) {
+    innovation(1) -= M_PI;
+  }
+  while (innovation(1) <= -M_PI / 2) {
+    innovation(1) += M_PI;
+  }
+
+  Update(innovation);
 }
 
-void KalmanFilter::Update(const VectorXd &z, const VectorXd &z_pred) {
-  // update the state by using Kalman Filter equations
+void KalmanFilter::Update(const VectorXd &innovation) {
   MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
 
-  VectorXd y = z - z_pred;                         // compute innovation
-  MatrixXd S = R_ + H_ * P_ * H_.transpose();      // compute innovation covariance
+  MatrixXd S = R_ + (H_ * P_ * H_.transpose());    // compute innovation covariance
   MatrixXd K = P_ * H_.transpose() * S.inverse();  // compute optimal Kalman gain
-  x_ = x_ + K * y;                                 // update the state
+  x_ = x_ + K * innovation;                        // update the state
   P_ = (I - K * H_) * P_;                          // update the state covariance
 }

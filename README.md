@@ -1,4 +1,15 @@
 # Extended Kalman Filter Project Starter Code
+
+
+## Possible TODO:
+
+[ ] Clean up code
+[ ] Make speed initializaion
+[ ] Clean up / prepare this README
+
+
+##
+
 Self-Driving Car Engineer Nanodegree Program
 
 In this project utilize a kalman filter to estimate the state of a moving object of interest with noisy lidar and radar measurements.

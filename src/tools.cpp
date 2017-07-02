@@ -20,7 +20,7 @@ VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
     }
 
     //accumulate squared residuals
-    for (int i = 0; i < estimations.size(); ++i) {
+    for (unsigned int i = 0; i < estimations.size(); ++i) {
 
         VectorXd residual = estimations[i] - ground_truth[i];
 
@@ -43,12 +43,17 @@ VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
 VectorXd PolarToCartesian(const VectorXd& observation_vector) {
     VectorXd cartesian(4);
 
-    double r_measured = observation_vector[0];
-    double phi_measured = observation_vector[1];
+    double r_measured = observation_vector(0);
+    double phi_measured = observation_vector(1);
+    double r_dot_measured = observation_vector(2);
+
     double x = r_measured * cos(phi_measured);
     double y = r_measured * sin(phi_measured);
 
-    cartesian << x, y, 0, 0;
+    double x_dot = r_dot_measured * cos(phi_measured);
+    double y_dot = r_dot_measured * sin(phi_measured);
+
+    cartesian << x, y, x_dot, y_dot;
 
     return cartesian;
 };
@@ -61,7 +66,14 @@ VectorXd CartesianToPolar(const VectorXd& state_vector) {
     double x_dot = state_vector[2];
     double y_dot = state_vector[3];
 
-    double rho = fmaxf(sqrt(x * x + y * y), 1e-6);
+    double rho = sqrt(x * x + y * y);
+
+    if (fabs(rho) < 1e-5) {
+        std::cout << "Division by zero in CartesianToPolarConverter "
+                     "- returning all zeros state" << std::endl;
+        return VectorXd(3);
+    }
+
     double phi = atan2(y, x);
     double rho_dot = (x * x_dot + y * y_dot) / rho;
 
@@ -81,22 +93,17 @@ MatrixXd CalculateRadarJacobian(const VectorXd& x_state) {
     double vy = x_state(3);
 
     double norm_squared = px * px + py * py;
-    double norm = sqrt(norm_squared);
-    double norm_3_2 = pow(norm, 1.5);
-
-    // check for too low norm (division by zero)
-    if (abs(norm_squared) < 1e-6) {
-        std::cout << "Too low norm of state causing division by";
-        std::cout << " zero in Jacobian calculation.";
-        std::cout << " Returning zero observation matrix.";
-        std::cout << std::endl;
-
-        return Hj;
+    if (fabs(norm_squared) < 1e-4) {
+        cout << "Division by zero in CalculateRadarJacobian "
+                "- returning zero H matrix" << endl;
+        return H;
     }
+    double norm = sqrt(norm_squared);
+    double norm_3 = norm_squared * norm;
 
-    H << px / norm,                           py / norm,                            0,         0,
-         -py / norm_squared,                  px / norm_squared,                    0,         0,
-         py * (vx * py - vy * px) / norm_3_2, px * ( vy * px - vx * py) / norm_3_2, px / norm, py / norm;
+    H << px / norm,                         py / norm,                          0,         0,
+         -py / norm_squared,                px / norm_squared,                  0,         0,
+         py * (vx * py - vy * px) / norm_3, px * ( vy * px - vx * py) / norm_3, px / norm, py / norm;
 
     return H;
 }
